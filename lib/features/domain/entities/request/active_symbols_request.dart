@@ -13,4 +13,11 @@ class ActiveSymbolsRequest {
       productType: json['productType'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'active_symbols': activeSymbols,
+      'product_type': productType,
+    };
+  }
 }

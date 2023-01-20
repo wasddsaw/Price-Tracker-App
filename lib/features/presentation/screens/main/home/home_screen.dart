@@ -32,11 +32,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void onSend() {
     debugPrint('onSend');
+
+    // debugPrint(jsonEncode(ActiveSymbolsRequest(
+    //     activeSymbols: 'brief',
+    //     productType: 'basic',
+    //   )));
+    
     socketClient.send(
-      ActiveSymbolsRequest(
+      // '{"active_symbols": "brief", "product_type": "basic"}'
+      jsonEncode(ActiveSymbolsRequest(
         activeSymbols: 'brief',
         productType: 'basic',
-      ),
+      )),
     );
   }
 
