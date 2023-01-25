@@ -1,23 +1,22 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/material.dart';
 import 'package:price_tracker/core/constant/constant.dart';
 import 'package:price_tracker/core/network/socket_client.dart';
-import 'package:price_tracker/features/domain/entities/request/active_symbols_request.dart';
 import 'package:price_tracker/features/domain/entities/response/market_response.dart';
 
 part 'market_state.dart';
 
 class MarketCubit extends Cubit<MarketState> {
+  MarketCubit(this.socketClient) : super(MarketState(markets: const []));
+
   final SocketClient socketClient;
 
-  MarketCubit(this.socketClient)
-      : super(
-          MarketState(
-            markets: const [],
-          ),
-        );
+  void connect() {
+    socketClient.connect(Constant.wssUrl);
+  }
+
+  void getMarkets() {}
 
   // void connect() {
   //   debugPrint('connect to webscoket...');
