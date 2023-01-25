@@ -18,7 +18,11 @@ class App extends StatelessWidget with AppRoutes {
   @override
   Widget build(BuildContext context) {
     // return MultiBlocProvider(
-    //   providers: const [],
+    //   providers: [
+    //     BlocProvider<MarketCubit>(
+    //       create: (context) => MarketCubit(),
+    //     ),
+    //   ],
     //   child: GetMaterialApp(
     //     debugShowCheckedModeBanner: false,
     //     title: 'Price Tracker',
