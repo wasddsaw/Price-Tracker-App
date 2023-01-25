@@ -39,6 +39,7 @@ dependencies:
   socket_io_client: ^2.0.1
   web_socket_channel: ^2.3.0
   meta: ^1.8.0
+  logger: any
 
   # flutter_deriv_api:
   #   git:

@@ -4,60 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:price_tracker/core/network/socket_client.dart';
-import 'package:price_tracker/features/domain/entities/request/active_symbols_request.dart';
 import 'package:price_tracker/features/presentation/components/shared/shared.dart';
 import 'package:price_tracker/features/presentation/cubit/market/market_cubit.dart';
-import 'package:price_tracker/features/presentation/cubit/websocket/websocket_cubit.dart';
-import 'package:price_tracker/features/presentation/cubit/websocket/websocket_cubit.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatelessWidget {
+  HomeScreen({super.key});
 
   static const routeName = '/home';
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   final socketClient = SocketClient();
 
-  //late String selectedMarket;
-  //List<MarketResponse> marketOptions;
-
-  @override
-  void initState() {
-    super.initState();
-    // final marketCubit = MarketCubit();
-    // marketCubit.getMarkets();
-  }
-
   // void onConnection() {
-  //   debugPrint('onConnection');
-  //   socketClient.connect(Constant.wssUrl);
-  //   socketClient.listen((message) {
-  //     marketOptions.add(
-  //       MarketResponse.fromJson(message['active_symbols']),
-  //     );
-  //     debugPrint(log(message));
-  //   });
-  // }
-
-  // void onSend() {
-  //   debugPrint('onSend...');
-  //   socketClient.send(
-  //     jsonEncode(ActiveSymbolsRequest(
-  //       activeSymbols: 'brief',
-  //       productType: 'basic',
-  //     )),
-  //   );
-  // }
-
-  // String log(jsonObject) {
-  //   var encoder = const JsonEncoder.withIndent("     ");
-  //   return encoder.convert(jsonObject);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,23 +22,72 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Price Tracker'),
         centerTitle: true,
       ),
-      body: BlocProvider<WebSocketCubit>(
-        create: ((context) => WebSocketCubit()..connect()),
-        child: BlocBuilder<WebSocketCubit, WebSocketStatus>(
+      body: BlocProvider<MarketCubit>(
+        create: (context) => MarketCubit(socketClient)..connect(),
+        child: BlocBuilder<MarketCubit, MarketState>(
           builder: (context, state) {
-            BlocProvider.of<WebSocketCubit>(context).sendMessage(
-              jsonEncode(
-                ActiveSymbolsRequest(
-                  activeSymbols: 'brief',
-                  productType: 'basic',
-                ),
-              ),
-            );
+            if (state.markets.isNotEmpty) {
+              BlocProvider.of<MarketCubit>(context).disconnect();
+            } else {
+              BlocProvider.of<MarketCubit>(context).getMarkets();
+            }
 
-            return Container();
+            // return ListView.builder(
+            //     itemCount: state.markets.length,
+            //     itemBuilder: (context, index) {
+            //       return Text(state.markets[index].marketDisplayName);
+            //     });
+
+            // return Column(
+            //   children: (),
+            // );
+            // print('Markets Length: ${state.markets.length}');
+            // return Container();
+
+            //String selectedMarket = 'Forex';
+
+            return state.markets.isNotEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: CustomDropdown(
+                      label: 'Select a Market',
+                      value: state.markets.isNotEmpty
+                          ? state.markets[0].displayName
+                          : null,
+                      list: state.markets
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e.displayName,
+                              child: Text(e.displayName),
+                              onTap: () {
+                                // will detect for 
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  )
+                : const LoadingIndicator();
           },
         ),
       ),
+      // body: BlocProvider<WebSocketCubit>(
+      //   create: ((context) => WebSocketCubit()..connect()),
+      //   child: BlocBuilder<WebSocketCubit, WebSocketStatus>(
+      //     builder: (context, state) {
+      //       BlocProvider.of<WebSocketCubit>(context).sendMessage(
+      //         jsonEncode(
+      //           ActiveSymbolsRequest(
+      //             activeSymbols: 'brief',
+      //             productType: 'basic',
+      //           ),
+      //         ),
+      //       );
+
+      //       return Container();
+      //     },
+      //   ),
+      // ),
       // body: BlocProvider<MarketCubit>(
       //   create: (context) => MarketCubit()..connect(),
       //   child: BlocBuilder<MarketCubit, MarketState>(

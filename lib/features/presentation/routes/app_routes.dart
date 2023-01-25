@@ -8,7 +8,7 @@ class AppRoutes {
     return [
       GetPage(
         name: HomeScreen.routeName,
-        page: () => const HomeScreen(),
+        page: () =>  HomeScreen(),
       ),
     ];
   }
