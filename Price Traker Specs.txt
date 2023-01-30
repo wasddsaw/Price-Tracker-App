@@ -1,0 +1,59 @@
+Price Tracker
+=============
+
+Requirements
+--------------
+
+- Cubit
+- Stream
+
+
+Data Model
+-----------
+
+- market
+- market_display_name [Market]
+- display_name [Asset]
+- symbol [Ticks]
+	
+ {
+            "allow_forward_starting": 0,
+            "display_name": "Step Index",
+            "display_order": 21,
+            "exchange_is_open": 1,
+            "is_trading_suspended": 0,
+            "market": "synthetic_index",
+            "market_display_name": "Derived",
+            "pip": 0.1,
+            "subgroup": "synthetics",
+            "subgroup_display_name": "Synthetics",
+            "submarket": "step_index",
+            "submarket_display_name": "Step Indices",
+            "symbol": "stpRNG",
+            "symbol_type": ""
+        },
+
+Market
+ - market (PK)
+ - market_display_name
+
+Asset
+ - display_name
+ - symbol
+ - market (FK)
+
+
+Relationship
+------------
+1 market has many assets (1:M)
+
+
+API Flow
+----------
+Stream Connected -> Active Symbols -> Ticks -> Forget -> Stream Closes
+
+
+
+
+
+

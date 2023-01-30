@@ -1,10 +1,11 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/material.dart';
 import 'package:price_tracker/core/constant/constant.dart';
 import 'package:price_tracker/core/network/socket_client.dart';
 import 'package:price_tracker/features/domain/entities/request/active_symbols_request.dart';
+import 'package:price_tracker/features/domain/entities/response/active_symbols_response.dart';
+import 'package:price_tracker/features/domain/entities/response/asset_response.dart';
 import 'package:price_tracker/features/domain/entities/response/market_response.dart';
 import 'package:logger/logger.dart';
 
@@ -12,30 +13,55 @@ part 'market_state.dart';
 
 class MarketCubit extends Cubit<MarketState> {
   MarketCubit(this.socketClient)
-      : super(MarketState(markets: <MarketResponse>[]));
+      : super(MarketState(
+          marketOptions: <MarketResponse>[],
+          assetOptions: <AssetResponse>[],
+          selectedMarket: '',
+        ));
 
   final SocketClient socketClient;
 
   void connect() {
     socketClient.connect(Constant.wssUrl);
     socketClient.listen((res) {
-      // debugPrint(const JsonEncoder.withIndent('  ').convert(res));
-      // List<MarketResponse> activeSymbols = res['active_symbols'];
-      // Logger().d(activeSymbols);
-      // Logger().d(const JsonEncoder.withIndent('  ')
-      //     .convert(jsonDecode(res)['active_symbols']));
+      final results = jsonDecode(res);
 
-      // final response = jsonDecode(res);
-      // Logger().d(response['active_symbols']);
+      // Active Symbols
+      var json = results['active_symbols'] as List;
+      List<ActiveSymbolsResponse> activeSymbols =
+          json.map(((e) => ActiveSymbolsResponse.fromJson(e))).toList();
 
-      var tagObjsJson = jsonDecode(res)['active_symbols'] as List;
-      List<MarketResponse> activeSymbols =
-          tagObjsJson.map(((e) => MarketResponse.fromJson(e))).toList();
-      emit(MarketState(markets: activeSymbols));
+      // Markets
+      List<MarketResponse> markets = activeSymbols
+          .map((e) => MarketResponse(
+                market: e.market,
+                marketDisplayName: e.marketDisplayName,
+              ))
+          .toList();
+
+      final seen = <String>{};
+
+      List<MarketResponse> marketsFiltered = markets
+          .where((market) => seen.add(market.marketDisplayName))
+          .toList();
+
+      Logger().d(jsonEncode(marketsFiltered));
+
+      // Assets
+      List<AssetResponse> assetOptions = activeSymbols
+          .map((e) => AssetResponse(
+              displayName: e.displayName, symbol: e.symbol, market: e.market))
+          .toList();
+
+      // Response to UI
+      emit(MarketState(
+          marketOptions: marketsFiltered,
+          assetOptions: assetOptions,
+          selectedMarket: marketsFiltered[0].market));
     });
   }
 
-  void getMarkets() {
+  void getActiveSymbols() {
     socketClient.send(
       jsonEncode(
         ActiveSymbolsRequest(
@@ -46,53 +72,16 @@ class MarketCubit extends Cubit<MarketState> {
     );
   }
 
+  void onTapChanged(String selectedMarket, List<MarketResponse> markets,
+      List<AssetResponse> assets) {
+    emit(MarketState(
+      marketOptions: markets,
+      assetOptions: assets,
+      selectedMarket: selectedMarket,
+    ));
+  }
+
   void disconnect() {
     socketClient.disconnect();
   }
-
-  // void connect() {
-  //   debugPrint('connect to webscoket...');
-  //   socketClient?.connect(Constant.wssUrl);
-  //   socketClient?.listen(
-  //     (res) {
-  //       print(res);
-  //       // debugPrint(jsonEncode(res));
-  //     },
-  //   );
-  // }
-
-  // void send() {
-  //   debugPrint('send to webscoket...');
-  //   socketClient?.send(
-  //     jsonEncode(
-  //       ActiveSymbolsRequest(
-  //         activeSymbols: 'brief',
-  //         productType: 'basic',
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // void getMarkets() {
-  //   debugPrint('getMarkets');
-  //   socketClient?.connect(Constant.wssUrl);
-  //   socketClient?.send(
-  //     jsonEncode(
-  //       ActiveSymbolsRequest(
-  //         activeSymbols: 'brief',
-  //         productType: 'basic',
-  //       ),
-  //     ),
-  //   );
-  //   socketClient?.listen(
-  //     (res) {
-  //       print(res);
-  //       emit(
-  //         MarketState(
-  //           markets: res['active_symbols'],
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 }

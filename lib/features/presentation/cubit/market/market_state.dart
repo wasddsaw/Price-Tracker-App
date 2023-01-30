@@ -1,9 +1,13 @@
 part of 'market_cubit.dart';
 
 class MarketState {
-  final List<MarketResponse> markets;
+  final List<MarketResponse> marketOptions;
+  final List<AssetResponse> assetOptions;
+  final String selectedMarket;
 
   MarketState({
-    required this.markets,
+    required this.marketOptions,
+    required this.assetOptions,
+    required this.selectedMarket,
   });
 }
